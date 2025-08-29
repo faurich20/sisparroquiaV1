@@ -7,7 +7,6 @@ import {
   TrendingUp, Archive, LayoutGrid
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
 
 const Sidebar = ({ collapsed, toggleCollapse }) => {
   const location = useLocation();
