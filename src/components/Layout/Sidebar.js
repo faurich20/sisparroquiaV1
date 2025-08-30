@@ -1,7 +1,8 @@
+// src/components/Layout/Sidebar.js
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Home, Users, Calendar, DollarSign, ShoppingCart,
+  Users, Calendar, DollarSign, ShoppingCart,
   Package, Settings, BarChart3, Shield, Church,
   ChevronDown, ChevronRight, FileText, Clock,
   TrendingUp, Archive, LayoutGrid
@@ -15,29 +16,6 @@ const Sidebar = ({ collapsed, toggleCollapse }) => {
   const [openFlyoutMenu, setOpenFlyoutMenu] = useState(null);
   const [flyoutPositionTop, setFlyoutPositionTop] = useState(0);
   const flyoutRef = useRef(null);
-
-  // Función para abrir o cerrar submenú inline (expandido)
-  const toggleMenu = (menuId) => {
-    setExpandedMenus(prev => ({ ...prev, [menuId]: !prev[menuId] }));
-  };
-
-  // Maneja abrir/cerrar menú flotante en modo colapsado y calcula posición relativa a la ventana
-  const handleCollapsedMenuClick = (id, event) => {
-    if (openFlyoutMenu === id) {
-      setOpenFlyoutMenu(null);
-    } else {
-      const rect = event.currentTarget.getBoundingClientRect();
-      // Ajustar para evitar que el menú quede fuera de pantalla verticalmente
-      const viewportHeight = window.innerHeight;
-      const menuHeight = (menuItems.find(item => item.id === id)?.children?.length || 0) * 40; // aprox 40px por item
-      let top = rect.top;
-      if (top + menuHeight > viewportHeight) {
-        top = viewportHeight - menuHeight - 10; // 10px de margen inferior
-      }
-      setFlyoutPositionTop(top);
-      setOpenFlyoutMenu(id);
-    }
-  };
 
   // Lista de menús con permisos y rutas
   const menuItems = [
@@ -82,16 +60,42 @@ const Sidebar = ({ collapsed, toggleCollapse }) => {
     { id: 'configuration', title: 'Configuración', icon: Settings, path: '/configuration', permission: 'configuration' }
   ];
 
-  // Filtra menús según permisos del usuario
-  const filteredMenuItems = menuItems.filter(item => hasPermission(item.permission));
-  
-  // Función para saber si ruta está activa
-  const isActive = (path) => location.pathname === path;
+  // Función para abrir o cerrar submenú inline
+  const toggleMenu = (menuId) => {
+    setExpandedMenus(prev => {
+      const newState = {};
+      Object.keys(prev).forEach(key => newState[key] = false);
+      newState[menuId] = !prev[menuId];
+      return newState;
+    });
+  };
 
-  // Función para detectar si algún hijo está activo para activar padre
+  // Maneja abrir/cerrar menú flotante en modo colapsado
+  const handleCollapsedMenuClick = (id, event) => {
+    if (openFlyoutMenu === id) {
+      setOpenFlyoutMenu(null);
+    } else {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const menuHeight = (menuItems.find(item => item.id === id)?.children?.length || 0) * 40;
+      let top = rect.top;
+      if (top + menuHeight > viewportHeight) {
+        top = viewportHeight - menuHeight - 10;
+      }
+      setFlyoutPositionTop(top);
+      setOpenFlyoutMenu(id);
+    }
+  };
+
+  // Filtra menús según permisos
+  const filteredMenuItems = menuItems.filter(item => hasPermission(item.permission));
+
+  // Activo si coincide o comienza con la ruta
+  const isActive = (path) => location.pathname.startsWith(path);
+
   const isParentActive = (children) => children?.some(child => isActive(child.path));
 
-  // Listener de click fuera para cerrar menú flotante
+  // Listener para cerrar flyout al hacer click fuera
   useEffect(() => {
     function handleClickOutside(event) {
       if (flyoutRef.current && !flyoutRef.current.contains(event.target)) {
@@ -101,19 +105,19 @@ const Sidebar = ({ collapsed, toggleCollapse }) => {
     if (openFlyoutMenu) {
       document.addEventListener('mousedown', handleClickOutside);
     }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openFlyoutMenu]);
 
-  // Componente para submenú inline (expandido)
   const SubmenuInline = ({ item }) => (
     <>
       <button
         onClick={() => toggleMenu(item.id)}
-        className={`w-full flex items-center gap-3 p-2 rounded-lg font-medium transition-all duration-200 ${
-          isParentActive(item.children) ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
-        }`}
+        role="button"
+        className="w-full flex items-center gap-3 p-2 rounded-lg font-medium transition-all duration-200"
+        style={{
+          background: isParentActive(item.children) ? "var(--surface-2)" : "transparent",
+          color: isParentActive(item.children) ? "var(--primary)" : "var(--text)"
+        }}
         aria-expanded={!!expandedMenus[item.id]}
         aria-controls={`${item.id}-submenu`}
       >
@@ -126,14 +130,16 @@ const Sidebar = ({ collapsed, toggleCollapse }) => {
         )}
       </button>
       {expandedMenus[item.id] && (
-        <div id={`${item.id}-submenu`} className="ml-6 space-y-1 mt-1" role="region" aria-label={`${item.title} submenu`}>
+        <div id={`${item.id}-submenu`} className="ml-6 space-y-1 mt-1" role="region">
           {item.children.map(child => (
             <Link
               key={child.path}
               to={child.path}
-              className={`flex items-center gap-2 p-1 rounded text-sm ${
-                isActive(child.path) ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'
-              }`}
+              className="flex items-center gap-2 p-1 rounded text-sm"
+              style={{
+                background: isActive(child.path) ? "var(--surface-2)" : "transparent",
+                color: isActive(child.path) ? "var(--primary)" : "var(--muted)"
+              }}
             >
               <child.icon className="w-4 h-4" />
               <span>{child.title}</span>
@@ -144,24 +150,28 @@ const Sidebar = ({ collapsed, toggleCollapse }) => {
     </>
   );
 
-  // Componente para menú flotante en colapsado
   const FlyoutMenu = ({ item }) => (
     <div
       ref={flyoutRef}
-      className="fixed left-[80px] bg-white border border-gray-200 rounded-lg shadow-lg z-50"
-      style={{ top: flyoutPositionTop, minWidth: 192 }}
+      className="fixed left-[80px] rounded-lg shadow-lg z-50 border"
+      style={{ 
+        top: flyoutPositionTop, 
+        minWidth: 192,
+        background: "var(--surface)",
+        borderColor: "var(--border)"
+      }}
       role="menu"
-      aria-label={`${item.title} submenu`}
     >
       {item.children.map(child => (
         <Link
           key={child.path}
           to={child.path}
-          className={`flex items-center gap-2 p-2 text-sm rounded hover:bg-blue-50 ${
-            isActive(child.path) ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
-          }`}
+          className="flex items-center gap-2 p-2 text-sm rounded"
+          style={{
+            background: isActive(child.path) ? "var(--surface-2)" : "transparent",
+            color: isActive(child.path) ? "var(--primary)" : "var(--text)"
+          }}
           onClick={() => setOpenFlyoutMenu(null)}
-          role="menuitem"
         >
           <child.icon className="w-4 h-4" />
           <span>{child.title}</span>
@@ -172,33 +182,34 @@ const Sidebar = ({ collapsed, toggleCollapse }) => {
 
   return (
     <aside
-      className="bg-white border-r border-gray-200 h-full flex flex-col shrink-0 relative"
-      style={{ width: collapsed ? 80 : 256 }}
-      aria-label="Menú lateral"
+      className="h-full flex flex-col shrink-0 relative"
+      style={{ 
+        width: collapsed ? 80 : 256,
+        background: "var(--surface)",
+        borderRight: `1px solid var(--border)`
+      }}
     >
       {/* Logo */}
       <Link
         to="/dashboard"
-        className={`flex items-center gap-3 px-4 py-4 border-b cursor-pointer ${collapsed ? 'justify-center text-center' : ''}`}
-        aria-label="Ir al Dashboard"
+        className={`flex items-center gap-3 px-4 py-4 border-b cursor-pointer ${collapsed ? 'justify-center' : ''}`}
+        style={{ borderColor: "var(--border)" }}
       >
-        <Church className="w-8 h-8 text-blue-600" />
+        <Church className="w-8 h-8" style={{ color: "var(--primary)" }} />
         {!collapsed && (
           <div>
-            <h1 className="text-lg font-bold text-gray-900">SisParroquia</h1>
-            <p className="text-xs text-gray-500">Sistema de Gestión</p>
+            <h1 className="text-lg font-bold" style={{ color: "var(--text)" }}>SisParroquia</h1>
+            <p className="text-xs" style={{ color: "var(--muted)" }}>Sistema de Gestión</p>
           </div>
         )}
       </Link>
 
       {/* Botón colapsar/expandir */}
-      <div className="p-2 border-b">
+      <div className="p-2 border-b" style={{ borderColor: "var(--border)" }}>
         <button
           onClick={toggleCollapse}
-          className="w-full flex items-center justify-center p-2 rounded-lg hover:bg-gray-100"
-          title={collapsed ? 'Expandir menú' : 'Contraer menú'}
-          aria-expanded={!collapsed}
-          aria-label={collapsed ? 'Expandir menú lateral' : 'Contraer menú lateral'}
+          className="w-full flex items-center justify-center p-2 rounded-lg"
+          style={{ color: "var(--text)" }}
         >
           <LayoutGrid className="w-5 h-5" />
           {!collapsed && <span className="ml-2 text-sm font-medium">Menú</span>}
@@ -206,46 +217,41 @@ const Sidebar = ({ collapsed, toggleCollapse }) => {
       </div>
 
       {/* Menú principal */}
-      <nav className="flex-1 overflow-y-auto p-2 space-y-2 relative" aria-label="Navegación principal">
+      <nav className="flex-1 overflow-y-auto p-2 space-y-2 relative">
         {filteredMenuItems.map(item => {
           const hasChildren = !!item.children?.length;
           const activeParent = isParentActive(item.children);
 
           if (hasChildren) {
             if (collapsed) {
-              // Menú colapsado con submenu flotante
               return (
                 <div key={item.id} className="relative flex justify-center">
                   <button
                     onClick={(e) => handleCollapsedMenuClick(item.id, e)}
-                    title={item.title}
-                    className={`flex items-center p-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 focus:outline-none ${
-                      activeParent ? 'bg-blue-50 text-blue-700' : ''
-                    }`}
-                    aria-haspopup="true"
-                    aria-expanded={openFlyoutMenu === item.id}
-                    aria-controls={`${item.id}-flyout-menu`}
+                    className="flex items-center p-3 rounded-lg font-medium"
+                    style={{
+                      background: activeParent ? "var(--surface-2)" : "transparent",
+                      color: activeParent ? "var(--primary)" : "var(--text)"
+                    }}
                   >
                     <item.icon className="w-5 h-5" />
                   </button>
-
                   {openFlyoutMenu === item.id && <FlyoutMenu item={item} />}
                 </div>
               );
             } else {
-              // Menú expandido con submenu inline
               return <SubmenuInline key={item.id} item={item} />;
             }
           } else {
-            // Menú sin hijos
             return (
               <Link
                 key={item.id}
                 to={item.path}
-                className={`flex items-center gap-3 p-2 rounded-lg font-medium transition-all duration-200 ${
-                  isActive(item.path) ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
-                } ${collapsed ? 'justify-center' : ''}`}
-                aria-current={isActive(item.path) ? 'page' : undefined}
+                className={`flex items-center p-2 rounded-lg font-medium transition-all ${collapsed ? 'justify-center' : 'gap-3'}`}
+                style={{
+                  background: isActive(item.path) ? "var(--surface-2)" : "transparent",
+                  color: isActive(item.path) ? "var(--primary)" : "var(--text)"
+                }}
               >
                 <item.icon className="w-5 h-5" />
                 {!collapsed && <span className="text-sm">{item.title}</span>}
@@ -256,24 +262,26 @@ const Sidebar = ({ collapsed, toggleCollapse }) => {
       </nav>
 
       {/* Información usuario */}
-      <div className="p-2 border-t">
+      <div className="p-2 border-t" style={{ borderColor: "var(--border)" }}>
         <div className={`flex items-center gap-2 ${collapsed ? 'justify-center' : ''}`}>
-          <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center" aria-hidden="true">
+          <div 
+            className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{
+              background: "linear-gradient(135deg, var(--primary), var(--secondary))"
+            }}
+          >
             <span className="text-white text-sm font-bold">{user?.name?.charAt(0) || 'U'}</span>
           </div>
           {!collapsed && (
             <div>
-              <p className="text-sm font-medium text-gray-900 truncate">{user?.name || 'Usuario'}</p>
-              <p className="text-xs text-gray-500 capitalize">{user?.role || 'usuario'}</p>
+              <p className="text-sm font-medium truncate" style={{ color: "var(--text)" }}>{user?.name || 'Usuario'}</p>
+              <p className="text-xs capitalize" style={{ color: "var(--muted)" }}>{user?.role || 'usuario'}</p>
             </div>
           )}
         </div>
       </div>
     </aside>
   );
-
-  
-
 };
 
 export default Sidebar;

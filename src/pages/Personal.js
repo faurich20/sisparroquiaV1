@@ -14,9 +14,17 @@ const Personal = () => {
 
             <Card>
                 <div className="text-center py-12">
-                    <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Gestión de Personal</h3>
-                    <p className="text-gray-600">Administra la información del personal de la parroquia.</p>
+                    {/* Ícono usa muted para ser discreto */}
+                    <Users className="w-16 h-16 text-muted mx-auto mb-4" />
+
+                    {/* Título usa strong para que cambie según tema */}
+                    <h3 className="text-lg font-semibold text-strong mb-2">
+                        Gestión de Personal
+                    </h3>
+                    {/* Texto normal controlado por tema */}
+                    <p className="text-normal">
+                        Administra la información del personal de la parroquia.
+                    </p>
                 </div>
             </Card>
         </div>

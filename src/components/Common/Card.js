@@ -1,17 +1,52 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+// src/components/UI/Card.js
+import React from "react";
 
-const Card = ({ children, className = '', hover = true, ...props }) => {
-    return (
-        <motion.div
-            className={`bg-white rounded-2xl p-6 shadow-sm border border-gray-200 ${className}`}
-            whileHover={hover ? { y: -2, shadow: "0 10px 25px -3px rgba(0, 0, 0, 0.1)" } : {}}
-            transition={{ duration: 0.2 }}
-            {...props}
-        >
-            {children}
-        </motion.div>
-    );
+const Card = ({ children, className = "" }) => {
+  return (
+    <div
+      className={`rounded-2xl shadow-sm border p-6 transition-colors ${className}`}
+      style={{
+        background: "var(--surface)",
+        borderColor: "var(--border)"
+      }}
+    >
+      {/* 
+        Nota: en lugar de fijar color global en el div,
+        dejamos que cada nivel de texto use las variables adecuadas
+      */}
+      <div className="space-y-2">
+        {children}
+      </div>
+    </div>
+  );
 };
+
+// Helpers para textos consistentes dentro del Card
+export const CardTitle = ({ children, className = "" }) => (
+  <h2
+    className={`text-xl font-bold ${className}`}
+    style={{ color: "var(--text-strong)" }}
+  >
+    {children}
+  </h2>
+);
+
+export const CardSubtitle = ({ children, className = "" }) => (
+  <p
+    className={`text-sm font-medium ${className}`}
+    style={{ color: "var(--muted)" }}
+  >
+    {children}
+  </p>
+);
+
+export const CardText = ({ children, className = "" }) => (
+  <p
+    className={`text-base ${className}`}
+    style={{ color: "var(--text)" }}
+  >
+    {children}
+  </p>
+);
 
 export default Card;
