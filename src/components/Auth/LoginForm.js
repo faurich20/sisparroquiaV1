@@ -32,7 +32,7 @@ const LoginForm = () => {
         ]
       };
       login(userData);
-      navigate('/dashboard');
+      navigate('/bienvenida');
       setLoading(false);
     }, 1500);
   };

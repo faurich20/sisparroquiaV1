@@ -6,6 +6,7 @@ import LoginForm from './components/Auth/LoginForm';
 
 // Pages
 import Dashboard from './pages/Dashboard';
+import Bienvenida from './pages/Bienvenida';
 import Personal from './pages/Personal';
 import Accounting from './pages/Accounting';
 import Sales from './pages/Sales';
@@ -58,8 +59,11 @@ const App = () => {
                 <Routes>
                     <Route path="/login" element={<LoginForm />} />
                     <Route element={<ProtectedRoutes />}>
-                        <Route index element={<Navigate to="/dashboard" />} />
+                        {/* Bienvenida es la página inicial */}
+                        <Route index element={<Navigate to="/bienvenida" />} />
+
                         <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/bienvenida" element={<Bienvenida />} />
                         <Route path="/personal" element={<Personal />} />
                         <Route path="/accounting" element={<Accounting />} />
                         <Route path="/sales" element={<Sales />} />
