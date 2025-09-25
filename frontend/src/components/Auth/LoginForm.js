@@ -11,30 +11,24 @@ const LoginForm = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
-    // Simular autenticación
-    setTimeout(() => {
-      const userData = {
-        id: 1,
-        name: 'Padre Miguel',
-        email: formData.email,
-        role: 'admin',
-        permissions: [
-          'dashboard', 'security', 'personal', 'liturgical',
-          'accounting', 'sales', 'purchases', 'warehouse',
-          'configuration', 'reports'
-        ]
-      };
-      login(userData);
+    const result = await login(formData.email, formData.password);
+
+    if (result.success) {
       navigate('/bienvenida');
-      setLoading(false);
-    }, 1500);
+    } else {
+      setError(result.error);
+    }
+    
+    setLoading(false);
   };
 
   const handleChange = (e) => {
@@ -42,6 +36,7 @@ const LoginForm = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
+    setError(''); // Limpiar error al cambiar campos
   };
 
   return (
@@ -76,6 +71,13 @@ const LoginForm = () => {
           </h1>
           <p style={{ color: "var(--muted)" }}>Sistema de Gestión Parroquial</p>
         </div>
+
+        {/* Mensaje de error */}
+        {error && (
+          <div className="mb-4 p-3 rounded-lg text-red-700 bg-red-100 border border-red-300">
+            {error}
+          </div>
+        )}
 
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -161,6 +163,17 @@ const LoginForm = () => {
             >
               Recuperar
             </button>
+          </p>
+        </div>
+
+        {/* Credenciales de prueba */}
+        <div className="mt-6 p-4 rounded-lg" style={{ background: "var(--surface-2)" }}>
+          <p className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
+            Credenciales de prueba:
+          </p>
+          <p className="text-xs" style={{ color: "var(--muted)" }}>
+            Email: admin@parroquia.com<br />
+            Contraseña: Admin123!
           </p>
         </div>
       </motion.div>

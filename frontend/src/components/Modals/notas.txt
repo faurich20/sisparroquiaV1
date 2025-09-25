@@ -1,0 +1,5 @@
+const validPermissions = [
+        'dashboard', 'seguridad', 'personal', 'litúrgico',
+        'contabilidad', 'ventas', 'compras', 'almacen',
+        'configuración', 'reportes'
+    ];

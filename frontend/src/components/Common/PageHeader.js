@@ -1,4 +1,4 @@
-// src/components/Layout/PageHeader.js
+// parroquia-frontend\src\components\Common\PageHeader.js
 import React from "react";
 import { motion } from "framer-motion";
 

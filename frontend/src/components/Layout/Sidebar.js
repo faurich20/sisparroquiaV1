@@ -1,15 +1,16 @@
 // src/components/Layout/Sidebar.js
 import React, { useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Users, Calendar, DollarSign, ShoppingCart,
   Package, Settings, BarChart3, Shield, Church,
-  FileText, Clock, TrendingUp, Archive
+  FileText, Clock, TrendingUp, Archive, ArrowLeft
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Sidebar = ({ collapsed, toggleCollapse }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, hasPermission } = useAuth();
   const flyoutRef = useRef(null);
 
@@ -88,7 +89,7 @@ const Sidebar = ({ collapsed, toggleCollapse }) => {
         borderRight: `1px solid var(--border)`
       }}
     >
-      {/* Logo y Título (sirve para colapsar/expandir) */}
+      {/* Logo y Título */}
       <div
         onClick={toggleCollapse}
         className={`flex items-center gap-3 h-16 px-4 border-b cursor-pointer ${collapsed ? 'justify-center' : ''}`}
@@ -107,6 +108,19 @@ const Sidebar = ({ collapsed, toggleCollapse }) => {
       <nav className="flex-1 overflow-y-auto p-2 space-y-2 relative">
         {filteredMenu && (
           <>
+            {/* 🔙 Botón regresar a Bienvenida */}
+            <button
+              onClick={() => navigate('/bienvenida')}
+              className={`flex items-center w-full p-2 mb-3 rounded-lg font-medium transition-all ${collapsed ? 'justify-center' : 'gap-3'}`}
+              style={{
+                background: "transparent",
+                color: "var(--muted)"
+              }}
+            >
+              <ArrowLeft className="w-5 h-5" />
+              {!collapsed && <span className="text-sm">Regresar</span>}
+            </button>
+
             {filteredMenu.children ? (
               <div>
                 {!collapsed && (
